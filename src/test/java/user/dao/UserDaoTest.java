@@ -37,6 +37,6 @@ public class UserDaoTest extends BaseTest {
     public void findAll() throws Exception {
         UserDao userDao = new UserDao();
         List<User> users = userDao.findAll();
-        softly.assertThat(users).hasSize(1);
+        softly.assertThat(users).hasSize(2);
     }
 }
