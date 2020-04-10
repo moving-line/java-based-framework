@@ -1,96 +1,99 @@
 package user.dao;
 
 import core.jdbc.JdbcTemplate;
+import core.jdbc.PreparedStatementSetter;
+import core.jdbc.RowMapper;
 import user.domain.User;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class UserDao {
-    public void insert(User user) throws SQLException {
-        JdbcTemplate template = new JdbcTemplate() {
-            @Override
-            public void setValues(PreparedStatement pstmt) throws SQLException {
-                pstmt.setString(1, user.getUserId());
-                pstmt.setString(2, user.getPassword());
-                pstmt.setString(3, user.getName());
-                pstmt.setString(4, user.getEmail());
-            }
+    private static final String INSERT_INTO_USER = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_VALUE_USER = "UPDATE USERS SET password=?, name=?, email=? WHERE userId=?";
+    private static final String SELECT_FROM_USER = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
+    private static final String SELECT_FROM_ALL_USER = "SELECT * FROM USERS";
 
-            @Override
-            public Object mapRow(ResultSet rs) throws SQLException {
-                return null;
-            }
-        };
+    private final JdbcTemplate template;
 
-        String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-        template.update(sql);
+    public UserDao(JdbcTemplate template) {
+        this.template = template;
     }
 
-    public void update(User user) throws SQLException {
-        JdbcTemplate template = new JdbcTemplate() {
-            @Override
-            public void setValues(PreparedStatement pstmt) throws SQLException {
-                pstmt.setString(1, user.getPassword());
-                pstmt.setString(2, user.getName());
-                pstmt.setString(3, user.getEmail());
-                pstmt.setString(4, user.getUserId());
-            }
-
-            @Override
-            public Object mapRow(ResultSet rs) throws SQLException {
-                return null;
-            }
+    public void insert(User user) {
+        PreparedStatementSetter pss = pstmt -> {
+            pstmt.setString(1, user.getUserId());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getName());
+            pstmt.setString(4, user.getEmail());
         };
 
-        String sql = "UPDATE USERS SET password=?, name=?, email=? WHERE userId=?";
-        template.update(sql);
+        template.update(INSERT_INTO_USER, pss);
     }
 
-    public User findByUserId(String userId) throws SQLException {
-        JdbcTemplate template = new JdbcTemplate() {
-            @Override
-            public void setValues(PreparedStatement pstmt) throws SQLException {
-                pstmt.setString(1, userId);
-            }
-
-            @Override
-            public Object mapRow(ResultSet rs) throws SQLException {
-                return new User(
-                        rs.getString("userId"),
-                        rs.getString("password"),
-                        rs.getString("name"),
-                        rs.getString("email")
-                );
-            }
-        };
-
-        String sql = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
-        return (User)template.queryForObject(sql);
+    public void insert2(User user) {
+        template.update(INSERT_INTO_USER, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
     }
 
-    public List<User> findAll() throws SQLException {
-        JdbcTemplate template = new JdbcTemplate() {
-            @Override
-            public void setValues(PreparedStatement pstmt) throws SQLException {
-            }
-
-            @Override
-            public Object mapRow(ResultSet rs) throws SQLException {
-                return new User(
-                        rs.getString("userId"),
-                        rs.getString("password"),
-                        rs.getString("name"),
-                        rs.getString("email")
-                );
-            }
+    public void update(User user) {
+        PreparedStatementSetter pss = pstmt -> {
+            pstmt.setString(1, user.getPassword());
+            pstmt.setString(2, user.getName());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getUserId());
         };
 
-        String sql = "SELECT * FROM USERS";
-        return template.query(sql).stream().map(o -> (User)o).collect(Collectors.toList());
+        template.update(UPDATE_VALUE_USER, pss);
+    }
+
+    public void update2(User user) {
+        JdbcTemplate template = new JdbcTemplate();
+        template.update(UPDATE_VALUE_USER, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());
+    }
+
+    public User findByUserId(String userId) {
+        PreparedStatementSetter pss = pstmt -> pstmt.setString(1, userId);
+        RowMapper<User> rm = rs -> new User(
+                rs.getString("userId"),
+                rs.getString("password"),
+                rs.getString("name"),
+                rs.getString("email")
+        );
+
+        return template.queryForObject(SELECT_FROM_USER, rm, pss);
+    }
+
+    public User findByUserId2(String userId) {
+        RowMapper<User> rm = rs -> new User(
+                rs.getString("userId"),
+                rs.getString("password"),
+                rs.getString("name"),
+                rs.getString("email")
+        );
+
+        return template.queryForObject(SELECT_FROM_USER, rm, userId);
+    }
+
+    public List<User> findAll() {
+        PreparedStatementSetter pss = pstmt -> {};
+        RowMapper<User> rm = rs -> new User(
+                rs.getString("userId"),
+                rs.getString("password"),
+                rs.getString("name"),
+                rs.getString("email")
+        );
+
+        return template.query(SELECT_FROM_ALL_USER, rm, pss);
+    }
+
+    public List<User> findAll2() {
+        RowMapper<User> rm = rs -> new User(
+                rs.getString("userId"),
+                rs.getString("password"),
+                rs.getString("name"),
+                rs.getString("email")
+        );
+
+        return template.query(SELECT_FROM_ALL_USER, rm);
     }
 }
 
