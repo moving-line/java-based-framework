@@ -1,6 +1,7 @@
 package user.dao;
 
 import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import core.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,9 +21,9 @@ public class UserDaoTest extends BaseTest {
     }
 
     @Test
-    public void crud() throws Exception {
+    public void crud() {
         User expected = new User("userId", "password", "name", "javajigi@email.com");
-        UserDao userDao = new UserDao();
+        UserDao userDao = new UserDao(new JdbcTemplate());
         userDao.insert(expected);
         User actual = userDao.findByUserId(expected.getUserId());
         softly.assertThat(actual).isEqualTo(expected);
@@ -34,9 +35,30 @@ public class UserDaoTest extends BaseTest {
     }
 
     @Test
-    public void findAll() throws Exception {
-        UserDao userDao = new UserDao();
+    public void crud2() {
+        User expected = new User("userId2", "password", "name", "javajigi@email.com");
+        UserDao userDao = new UserDao(new JdbcTemplate());
+        userDao.insert2(expected);
+        User actual = userDao.findByUserId2(expected.getUserId());
+        softly.assertThat(actual).isEqualTo(expected);
+
+        expected.update(new User("userId2", "password2", "name2", "sanjigi@email.com"));
+        userDao.update2(expected);
+        actual = userDao.findByUserId2(expected.getUserId());
+        softly.assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void findAll() {
+        UserDao userDao = new UserDao(new JdbcTemplate());
         List<User> users = userDao.findAll();
-        softly.assertThat(users).hasSize(1);
+        softly.assertThat(users).hasSize(2);
+    }
+
+    @Test
+    public void findAll2() {
+        UserDao userDao = new UserDao(new JdbcTemplate());
+        List<User> users = userDao.findAll2();
+        softly.assertThat(users).hasSize(2);
     }
 }

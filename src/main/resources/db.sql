@@ -10,3 +10,4 @@ CREATE TABLE USERS (
 );
 
 INSERT INTO USERS VALUES('admin', 'password', '자바지기', 'admin@slipp.net');
+INSERT INTO USERS VALUES('movingline', 'password', '무빙라인', 'movingline@slipp.net');
