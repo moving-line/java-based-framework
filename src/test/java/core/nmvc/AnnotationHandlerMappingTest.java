@@ -15,7 +15,7 @@ public class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
 
     @Before
-    public void setup() {
+    public void setup() throws InstantiationException, IllegalAccessException {
         handlerMapping = new AnnotationHandlerMapping("core.nmvc");
         handlerMapping.initialize();
     }
